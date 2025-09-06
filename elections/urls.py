@@ -37,6 +37,7 @@ urlpatterns = [
     path('admin/delete-entity/<int:entity_id>/', views.delete_entity, name='delete_entity'),
     path('admin/edit-candidate/<int:candidate_id>/', views.edit_candidate, name='edit_candidate'),
     path('admin/delete-candidate/<int:candidate_id>/', views.delete_candidate, name='delete_candidate'),
+    path('admin/appearance-settings/', views.appearance_settings, name='appearance_settings'),
     
     # صفحة تفاصيل الإحصائيات
     path('statistics/<str:stat_type>/', views.statistics_detail, name='statistics_detail'),

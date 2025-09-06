@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, Entity, Candidate, Pillar, Voter
+from .models import CustomUser, Entity, Candidate, Pillar, Voter, AppearanceSettings
 
 # تخصيص إدارة المستخدم
 class CustomUserAdmin(UserAdmin):
@@ -80,11 +80,37 @@ class VoterAdmin(admin.ModelAdmin):
     )
 
 # تسجيل النماذج
+# إدارة إعدادات المظهر
+class AppearanceSettingsAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'primary_color', 'secondary_color', 'is_active', 'created_at')
+    list_filter = ('is_active', 'created_at')
+    readonly_fields = ('created_at', 'updated_at')
+    
+    fieldsets = (
+        ('الألوان الأساسية', {
+            'fields': ('primary_color', 'secondary_color', 'button_text_color', 'card_title_color')
+        }),
+        ('الحالة', {
+            'fields': ('is_active',)
+        }),
+        ('معلومات التوقيت', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def has_delete_permission(self, request, obj=None):
+        # منع حذف الإعدادات النشطة
+        if obj and obj.is_active:
+            return False
+        return super().has_delete_permission(request, obj)
+
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Entity, EntityAdmin)
 admin.site.register(Candidate, CandidateAdmin)
 admin.site.register(Pillar, PillarAdmin)
 admin.site.register(Voter, VoterAdmin)
+admin.site.register(AppearanceSettings, AppearanceSettingsAdmin)
 
 # تخصيص عناوين لوحة الإدارة
 admin.site.site_header = 'نظام مراقبة الانتخابات'

@@ -1,0 +1,305 @@
+:root {
+    /* الألوان الأساسية */
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --card-title-color: #212529;
+    
+    /* تدرجات اللون الأساسي */
+    --primary-light: color-mix(in srgb, var(--primary-color) 80%, white);
+    --primary-lighter: color-mix(in srgb, var(--primary-color) 60%, white);
+    --primary-dark: color-mix(in srgb, var(--primary-color) 80%, black);
+    --primary-darker: color-mix(in srgb, var(--primary-color) 60%, black);
+    
+    /* تدرجات اللون الثانوي */
+    --secondary-light: color-mix(in srgb, var(--secondary-color) 80%, white);
+    --secondary-lighter: color-mix(in srgb, var(--secondary-color) 60%, white);
+    --secondary-dark: color-mix(in srgb, var(--secondary-color) 80%, black);
+    --secondary-darker: color-mix(in srgb, var(--secondary-color) 60%, black);
+    
+    /* ألوان إضافية */
+    --accent-color: color-mix(in srgb, var(--primary-color) 70%, var(--secondary-color) 30%);
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: var(--primary-color);
+}
+
+/* تطبيق الألوان على العناصر */
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color) !important;
+    border-color: var(--secondary-color) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-dark) !important;
+    border-color: var(--secondary-dark) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+/* الروابط */
+a {
+    color: var(--primary-color) !important;
+}
+
+a:hover {
+    color: var(--primary-dark) !important;
+}
+
+/* روابط القائمة الجانبية */
+.sidebar .nav-link {
+    color: var(--button-text-color, rgba(255,255,255,0.9)) !important;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    color: var(--button-text-color, white) !important;
+}
+
+/* شريط التنقل */
+.navbar-brand {
+    color: var(--primary-color) !important;
+}
+
+.navbar-nav .nav-link {
+    color: var(--secondary-color) !important;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    color: var(--primary-color) !important;
+}
+
+/* الشريط العلوي */
+.top-navbar {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+}
+
+.hamburger-btn {
+    color: white !important;
+    background-color: rgba(255,255,255,0.1) !important;
+}
+
+.hamburger-btn:hover {
+    background-color: var(--primary-dark) !important;
+    color: white !important;
+}
+
+/* البطاقات */
+.card-header {
+    background-color: var(--primary-lighter) !important;
+    border-bottom-color: var(--primary-light) !important;
+    color: var(--card-title-color) !important;
+}
+
+.card-primary {
+    border-color: var(--primary-color) !important;
+}
+
+.card-primary .card-header {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+/* عناوين البطاقات */
+.card-title {
+    color: var(--card-title-color) !important;
+}
+
+
+
+/* بطاقات الإحصائيات */
+.border-left-primary {
+    border-left: 4px solid var(--primary-color) !important;
+}
+
+.border-left-success {
+    border-left: 4px solid var(--accent-color) !important;
+}
+
+.border-left-info {
+    border-left: 4px solid var(--primary-light) !important;
+}
+
+.border-left-warning {
+    border-left: 4px solid var(--secondary-color) !important;
+}
+
+/* تأثيرات التمرير للبطاقات */
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-color: var(--primary-color) !important;
+}
+
+/* الجداول */
+.table-primary {
+    background-color: var(--primary-lighter) !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: var(--primary-lighter) !important;
+    opacity: 0.3;
+}
+
+/* النماذج */
+.form-control:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--primary-color) 25%, transparent) !important;
+}
+
+.form-select:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--primary-color) 25%, transparent) !important;
+}
+
+/* التنبيهات */
+.alert-primary {
+    background-color: var(--primary-lighter) !important;
+    border-color: var(--primary-light) !important;
+    color: var(--primary-darker) !important;
+}
+
+.alert-secondary {
+    background-color: var(--secondary-lighter) !important;
+    border-color: var(--secondary-light) !important;
+    color: var(--secondary-darker) !important;
+}
+
+/* الشارات */
+.badge-primary {
+    background-color: var(--primary-color) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+.badge-secondary {
+    background-color: var(--secondary-color) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+/* التقدم */
+.progress-bar {
+    background-color: var(--primary-color) !important;
+}
+
+/* الحدود */
+.border-primary {
+    border-color: var(--primary-color) !important;
+}
+
+.border-secondary {
+    border-color: var(--secondary-color) !important;
+}
+
+/* النصوص */
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-secondary {
+    color: var(--secondary-color) !important;
+}
+
+/* الخلفيات */
+.bg-primary {
+    background-color: var(--primary-color) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+.bg-secondary {
+    background-color: var(--secondary-color) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+.bg-light-primary {
+    background-color: var(--primary-lighter) !important;
+}
+
+.bg-light-secondary {
+    background-color: var(--secondary-lighter) !important;
+}
+
+/* تخصيصات إضافية للنظام */
+.sidebar {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+}
+
+.dashboard-card {
+    border-left: 4px solid var(--primary-color) !important;
+}
+
+.stats-card {
+    background: linear-gradient(45deg, var(--primary-lighter), var(--secondary-lighter)) !important;
+}
+
+/* الأزرار الرئيسية */
+.btn-info {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+.btn-info:hover {
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+.btn-warning {
+    background-color: var(--secondary-color) !important;
+    border-color: var(--secondary-color) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+.btn-warning:hover {
+    background-color: var(--secondary-dark) !important;
+    border-color: var(--secondary-dark) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+.btn-success {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+.btn-success:hover {
+    background-color: color-mix(in srgb, var(--accent-color) 80%, black) !important;
+    border-color: color-mix(in srgb, var(--accent-color) 80%, black) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+/* تأثيرات التفاعل */
+.btn-primary:active,
+.btn-primary.active {
+    background-color: var(--primary-darker) !important;
+    border-color: var(--primary-darker) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+.btn-secondary:active,
+.btn-secondary.active {
+    background-color: var(--secondary-darker) !important;
+    border-color: var(--secondary-darker) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+
+/* تحسينات للوضع المظلم */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary-light: color-mix(in srgb, var(--primary-color) 60%, white);
+        --secondary-light: color-mix(in srgb, var(--secondary-color) 60%, white);
+    }
+}

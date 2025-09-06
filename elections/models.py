@@ -90,3 +90,33 @@ class Voter(models.Model):
     
     def __str__(self):
         return f"{self.name} - {self.voter_number}"
+
+# نموذج إعدادات المظهر
+class AppearanceSettings(models.Model):
+    primary_color = models.CharField(max_length=7, default='#007bff', verbose_name='اللون الأساسي الأول')
+    secondary_color = models.CharField(max_length=7, default='#6c757d', verbose_name='اللون الأساسي الثاني')
+    button_text_color = models.CharField(max_length=7, default='#ffffff', verbose_name='لون نص الأزرار')
+    card_title_color = models.CharField(max_length=7, default='#212529', verbose_name='لون عنوان البطاقة')
+    created_at = models.DateTimeField(default=timezone.now, verbose_name='تاريخ الإنشاء')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='تاريخ التحديث')
+    is_active = models.BooleanField(default=True, verbose_name='نشط')
+    
+    class Meta:
+        verbose_name = 'إعدادات المظهر'
+        verbose_name_plural = 'إعدادات المظهر'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"إعدادات المظهر - {self.created_at.strftime('%Y-%m-%d')}"
+    
+    @classmethod
+    def get_active_settings(cls):
+        """الحصول على الإعدادات النشطة"""
+        return cls.objects.filter(is_active=True).first()
+    
+    def save(self, *args, **kwargs):
+        """جعل هذه الإعدادات نشطة وإلغاء تفعيل الأخرى"""
+        if self.is_active:
+            cls = self.__class__
+            cls.objects.filter(is_active=True).update(is_active=False)
+        super().save(*args, **kwargs)

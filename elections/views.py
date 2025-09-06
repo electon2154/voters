@@ -7,8 +7,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
-from .models import CustomUser, Entity, Candidate, Pillar, Voter
-from .forms import LoginForm, ExcelUploadForm, VoterForm, PillarForm, CandidateForm, VoterCandidateForm
+from .models import CustomUser, Entity, Candidate, Pillar, Voter, AppearanceSettings
+from .forms import LoginForm, ExcelUploadForm, VoterForm, PillarForm, CandidateForm, VoterCandidateForm, EntityForm
 import json
 import openpyxl
 
@@ -582,35 +582,19 @@ def create_entity(request):
         return redirect('elections:login')
     
     if request.method == 'POST':
-        # إنشاء مستخدم جديد
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        full_name = request.POST.get('full_name')
-        phone_number = request.POST.get('phone_number', '')
-        entity_name = request.POST.get('entity_name')
-        
-        if CustomUser.objects.filter(username=username).exists():
-            messages.error(request, 'اسم المستخدم موجود مسبقاً')
-        else:
-            # إنشاء المستخدم
-            user = CustomUser.objects.create_user(
-                username=username,
-                password=password,
-                full_name=full_name,
-                phone_number=phone_number,
-                user_type='entity'
-            )
-            
-            # إنشاء الكيان
-            Entity.objects.create(
-                user=user,
-                entity_name=entity_name
-            )
-            
-            messages.success(request, f'تم إنشاء الكيان "{entity_name}" بنجاح')
-            return redirect('elections:admin_dashboard')
+        form = EntityForm(request.POST, request.FILES)
+        if form.is_valid():
+            # التحقق من عدم وجود اسم المستخدم مسبقاً
+            if CustomUser.objects.filter(username=form.cleaned_data['username']).exists():
+                form.add_error('username', 'اسم المستخدم موجود مسبقاً')
+            else:
+                entity = form.save()
+                messages.success(request, f'تم إنشاء الكيان "{entity.entity_name}" بنجاح')
+                return redirect('elections:admin_dashboard')
+    else:
+        form = EntityForm()
     
-    return render(request, 'elections/create_entity.html')
+    return render(request, 'elections/create_entity.html', {'form': form})
 
 # إنشاء مرشح جديد
 @login_required
@@ -1038,3 +1022,53 @@ def statistics_detail(request, stat_type):
         return redirect('elections:admin_dashboard')
     
     return render(request, 'elections/statistics_detail.html', context)
+
+@login_required
+def appearance_settings(request):
+    """إعدادات المظهر - متاحة للمسؤولين فقط"""
+    if request.user.user_type != 'admin':
+        messages.error(request, 'غير مسموح لك بالوصول إلى هذه الصفحة')
+        return redirect('elections:admin_dashboard')
+    
+    current_settings = AppearanceSettings.get_active_settings()
+    
+    if request.method == 'POST':
+        primary_color = request.POST.get('primary_color', '#007bff')
+        secondary_color = request.POST.get('secondary_color', '#6c757d')
+        button_text_color = request.POST.get('button_text_color', '#ffffff')
+        card_title_color = request.POST.get('card_title_color', '#212529')
+        
+        # التحقق من صحة الألوان (hex format)
+        if not (primary_color.startswith('#') and len(primary_color) == 7):
+            messages.error(request, 'اللون الأساسي الأول غير صحيح')
+            return render(request, 'elections/appearance_settings.html', {
+                'current_settings': current_settings
+            })
+        
+        if not (secondary_color.startswith('#') and len(secondary_color) == 7):
+            messages.error(request, 'اللون الأساسي الثاني غير صحيح')
+            return render(request, 'elections/appearance_settings.html', {
+                'current_settings': current_settings
+            })
+            
+        if not (button_text_color.startswith('#') and len(button_text_color) == 7):
+            messages.error(request, 'لون نص الأزرار غير صحيح')
+            return render(request, 'elections/appearance_settings.html', {
+                'current_settings': current_settings
+            })
+        
+        # إنشاء إعدادات جديدة
+        new_settings = AppearanceSettings.objects.create(
+            primary_color=primary_color,
+            secondary_color=secondary_color,
+            button_text_color=button_text_color,
+            card_title_color=card_title_color,
+            is_active=True
+        )
+        
+        messages.success(request, 'تم حفظ إعدادات المظهر بنجاح')
+        return redirect('elections:appearance_settings')
+    
+    return render(request, 'elections/appearance_settings.html', {
+        'current_settings': current_settings
+    })

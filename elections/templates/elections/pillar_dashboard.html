@@ -4,6 +4,39 @@
 
 {% block content %}
 {% csrf_token %}
+
+<style>
+.candidate-mini-image:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important;
+}
+
+.candidate-profile-mini:hover .mini-badge {
+    transform: scale(1.2);
+}
+
+@media (max-width: 768px) {
+    .candidate-mini-image, .candidate-mini-default {
+        width: 45px !important;
+        height: 45px !important;
+    }
+    
+    .candidate-mini-default i {
+        font-size: 16px !important;
+    }
+    
+    .mini-badge {
+        width: 15px !important;
+        height: 15px !important;
+    }
+    
+    .mini-badge i {
+        font-size: 6px !important;
+        margin-top: 1px !important;
+        margin-left: 0px !important;
+    }
+}
+</style>
 <div class="page-header">
     <div class="d-flex justify-content-between align-items-center">
         <div>
@@ -13,8 +46,30 @@
             </h2>
             <p class="text-muted mb-0">لوحة تحكم الركيزة - إدارة الناخبين والإحصائيات</p>
         </div>
-        <div>
-            <span class="badge bg-primary fs-6">المرشح: {{ pillar.candidate.user.full_name }}</span>
+        <div class="d-flex align-items-center">
+            <div class="candidate-profile-mini position-relative me-3">
+                {% if pillar.candidate.profile_image %}
+                    <img src="{{ pillar.candidate.profile_image.url }}" alt="{{ pillar.candidate.user.full_name }}" 
+                         class="candidate-mini-image rounded-3 shadow" 
+                         style="width: 60px; height: 60px; object-fit: cover; border: 3px solid #fff; transition: all 0.3s ease;">
+                    <div class="mini-badge position-absolute bottom-0 end-0 bg-success rounded-circle" 
+                         style="width: 18px; height: 18px; border: 2px solid #fff;">
+                        <i class="fas fa-check text-white" style="font-size: 8px; margin-top: 2px; margin-left: 1px;"></i>
+                    </div>
+                {% else %}
+                    <div class="candidate-mini-default position-relative d-flex align-items-center justify-content-center rounded-3 shadow" 
+                         style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: 3px solid #fff;">
+                        <i class="fas fa-user-tie text-white" style="font-size: 20px;"></i>
+                        <div class="mini-badge position-absolute bottom-0 end-0 bg-warning rounded-circle" 
+                             style="width: 18px; height: 18px; border: 2px solid #fff;">
+                            <i class="fas fa-camera text-white" style="font-size: 8px; margin-top: 2px; margin-left: 1px;"></i>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            <div>
+                <span class="badge bg-primary fs-6 px-3 py-2">المرشح: {{ pillar.candidate.user.full_name }}</span>
+            </div>
         </div>
     </div>
 </div>

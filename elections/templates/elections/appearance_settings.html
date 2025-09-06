@@ -1,0 +1,246 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}إعدادات المظهر - نظام مراقبة الانتخابات{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-palette me-2"></i>
+                        إعدادات المظهر
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post" id="appearanceForm">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="primary_color" class="form-label">اللون الأساسي الأول</label>
+                                    <div class="input-group">
+                                        <input type="color" class="form-control form-control-color" 
+                                               id="primary_color" name="primary_color" 
+                                               value="{{ current_settings.primary_color|default:'#007bff' }}" 
+                                               title="اختر اللون الأساسي الأول">
+                                        <input type="text" class="form-control" 
+                                               id="primary_color_text" 
+                                               value="{{ current_settings.primary_color|default:'#007bff' }}" 
+                                               readonly>
+                                    </div>
+                                    <div class="form-text">هذا اللون سيُستخدم للأزرار الأساسية والروابط</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="secondary_color" class="form-label">اللون الأساسي الثاني</label>
+                                    <div class="input-group">
+                                        <input type="color" class="form-control form-control-color" 
+                                               id="secondary_color" name="secondary_color" 
+                                               value="{{ current_settings.secondary_color|default:'#6c757d' }}" 
+                                               title="اختر اللون الأساسي الثاني">
+                                        <input type="text" class="form-control" 
+                                               id="secondary_color_text" 
+                                               value="{{ current_settings.secondary_color|default:'#6c757d' }}" 
+                                               readonly>
+                                    </div>
+                                    <div class="form-text">هذا اللون سيُستخدم للعناصر الثانوية والحدود</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="button_text_color" class="form-label">لون نص الأزرار</label>
+                                    <div class="input-group">
+                                        <input type="color" class="form-control form-control-color" 
+                                               id="button_text_color" name="button_text_color" 
+                                               value="{{ current_settings.button_text_color|default:'#ffffff' }}" 
+                                               title="اختر لون نص الأزرار">
+                                        <input type="text" class="form-control" 
+                                               id="button_text_color_text" 
+                                               value="{{ current_settings.button_text_color|default:'#ffffff' }}" 
+                                               readonly>
+                                    </div>
+                                    <div class="form-text">هذا اللون سيُستخدم لنص جميع الأزرار</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="card_title_color" class="form-label">لون عنوان البطاقة</label>
+                                    <div class="input-group">
+                                        <input type="color" class="form-control form-control-color" 
+                                               id="card_title_color" name="card_title_color" 
+                                               value="{{ current_settings.card_title_color|default:'#212529' }}" 
+                                               title="اختر لون عنوان البطاقة">
+                                        <input type="text" class="form-control" 
+                                               id="card_title_color_text" 
+                                               value="{{ current_settings.card_title_color|default:'#212529' }}" 
+                                               readonly>
+                                    </div>
+                                    <div class="form-text">اختر لون العناوين في البطاقات</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- معاينة الألوان -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5>معاينة الألوان</h5>
+                                <div class="preview-section p-3 border rounded">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>الأزرار</h6>
+                                            <button type="button" class="btn btn-primary me-2" id="preview-btn-primary">زر أساسي</button>
+                                            <button type="button" class="btn btn-secondary" id="preview-btn-secondary">زر ثانوي</button>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>الروابط والنصوص</h6>
+                                            <p><a href="#" id="preview-link">رابط تجريبي</a></p>
+                                            <p class="text-primary" id="preview-text-primary">نص بالون الأساسي</p>
+                                            <p class="text-secondary" id="preview-text-secondary">نص بالون الثانوي</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <h6>البطاقات</h6>
+                                            <div class="card" style="max-width: 300px;">
+                                                <div class="card-header" id="preview-card-header">
+                                                    عنوان البطاقة
+                                                </div>
+                                                <div class="card-body">
+                                                    <p class="card-text">محتوى البطاقة التجريبي</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>النماذج</h6>
+                                            <input type="text" class="form-control mb-2" placeholder="حقل تجريبي" id="preview-input">
+                                            <select class="form-select" id="preview-select">
+                                                <option>خيار تجريبي</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save me-2"></i>
+                                    حفظ الإعدادات
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-lg ms-2" onclick="resetToDefaults()">
+                                    <i class="fas fa-undo me-2"></i>
+                                    استعادة الافتراضي
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// تحديث معاينة الألوان في الوقت الفعلي
+function updatePreview() {
+    const primaryColor = document.getElementById('primary_color').value;
+    const secondaryColor = document.getElementById('secondary_color').value;
+    const buttonTextColor = document.getElementById('button_text_color').value;
+    const cardTitleColor = document.getElementById('card_title_color').value;
+    
+    // تحديث النصوص
+    document.getElementById('primary_color_text').value = primaryColor;
+    document.getElementById('secondary_color_text').value = secondaryColor;
+    document.getElementById('button_text_color_text').value = buttonTextColor;
+    document.getElementById('card_title_color_text').value = cardTitleColor;
+    
+    // تحديث متغيرات CSS
+    document.documentElement.style.setProperty('--primary-color', primaryColor);
+    document.documentElement.style.setProperty('--secondary-color', secondaryColor);
+    
+    // تحديث عناصر المعاينة
+    const previewBtnPrimary = document.getElementById('preview-btn-primary');
+    const previewBtnSecondary = document.getElementById('preview-btn-secondary');
+    const previewLink = document.getElementById('preview-link');
+    const previewTextPrimary = document.getElementById('preview-text-primary');
+    const previewTextSecondary = document.getElementById('preview-text-secondary');
+    const previewCardHeader = document.getElementById('preview-card-header');
+    
+    if (previewBtnPrimary) {
+        previewBtnPrimary.style.backgroundColor = primaryColor;
+        previewBtnPrimary.style.borderColor = primaryColor;
+        previewBtnPrimary.style.color = buttonTextColor;
+    }
+    
+    if (previewBtnSecondary) {
+        previewBtnSecondary.style.backgroundColor = secondaryColor;
+        previewBtnSecondary.style.borderColor = secondaryColor;
+        previewBtnSecondary.style.color = buttonTextColor;
+    }
+    
+    if (previewLink) {
+        previewLink.style.color = primaryColor;
+    }
+    
+    if (previewCardHeader) {
+        previewCardHeader.style.color = cardTitleColor;
+    }
+    
+    if (previewTextPrimary) {
+        previewTextPrimary.style.color = primaryColor;
+    }
+    
+    if (previewTextSecondary) {
+        previewTextSecondary.style.color = secondaryColor;
+    }
+    
+    if (previewCardHeader) {
+        previewCardHeader.style.backgroundColor = primaryColor + '20';
+        previewCardHeader.style.borderBottomColor = primaryColor + '40';
+    }
+}
+
+// استعادة الألوان الافتراضية
+function resetToDefaults() {
+    document.getElementById('primary_color').value = '#007bff';
+    document.getElementById('secondary_color').value = '#6c757d';
+    document.getElementById('button_text_color').value = '#ffffff';
+    document.getElementById('card_title_color').value = '#212529';
+    updatePreview();
+}
+
+// إضافة مستمعي الأحداث
+document.addEventListener('DOMContentLoaded', function() {
+    const primaryColorInput = document.getElementById('primary_color');
+    const secondaryColorInput = document.getElementById('secondary_color');
+    const buttonTextColorInput = document.getElementById('button_text_color');
+    const cardTitleColorInput = document.getElementById('card_title_color');
+    
+    primaryColorInput.addEventListener('input', updatePreview);
+    secondaryColorInput.addEventListener('input', updatePreview);
+    buttonTextColorInput.addEventListener('input', updatePreview);
+    cardTitleColorInput.addEventListener('input', updatePreview);
+    
+    // تحديث المعاينة عند تحميل الصفحة
+    updatePreview();
+});
+</script>
+{% endblock %}

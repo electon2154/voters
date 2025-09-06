@@ -231,6 +231,81 @@ class CandidateForm(forms.ModelForm):
         
         return candidate
 
+# نموذج إنشاء الكيان
+class EntityForm(forms.Form):
+    entity_name = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'اسم الكيان',
+            'dir': 'rtl'
+        }),
+        label='اسم الكيان'
+    )
+    full_name = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'اسم المسؤول',
+            'dir': 'rtl'
+        }),
+        label='اسم المسؤول'
+    )
+    username = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'اسم المستخدم',
+            'dir': 'rtl'
+        }),
+        label='اسم المستخدم'
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'كلمة المرور',
+            'dir': 'rtl'
+        }),
+        label='كلمة المرور'
+    )
+    phone_number = forms.CharField(
+        max_length=15,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'رقم الهاتف',
+            'dir': 'rtl'
+        }),
+        label='رقم الهاتف'
+    )
+    logo = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': 'image/*'
+        }),
+        label='شعار الكيان'
+    )
+    
+    def save(self, commit=True):
+        # إنشاء المستخدم أولاً
+        user = CustomUser.objects.create_user(
+            username=self.cleaned_data['username'],
+            password=self.cleaned_data['password'],
+            full_name=self.cleaned_data['full_name'],
+            phone_number=self.cleaned_data['phone_number'],
+            user_type='entity'
+        )
+        
+        # إنشاء الكيان
+        entity = Entity.objects.create(
+            user=user,
+            entity_name=self.cleaned_data['entity_name'],
+            logo=self.cleaned_data.get('logo')
+        )
+        
+        return entity
+
 # نموذج رفع ملف Excel
 class ExcelUploadForm(forms.Form):
     excel_file = forms.FileField(
