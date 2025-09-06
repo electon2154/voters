@@ -1,0 +1,324 @@
+{% extends 'elections/base.html' %}
+
+{% block title %}{{ page_title }} - نظام مراقبة الانتخابات{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-primary">
+                <i class="fas fa-chart-bar me-2"></i>
+                {{ page_title }}
+            </h2>
+            {% if total_count %}
+                <p class="text-muted mb-0">إجمالي العناصر: {{ total_count }}</p>
+            {% endif %}
+        </div>
+        <div class="text-muted">
+            <i class="fas fa-calendar me-1"></i>
+            {{ "now"|date:"Y/m/d" }}
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    {% if stat_type == 'voters' %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="search" class="form-label">البحث</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           value="{{ search_query|default:'' }}" 
+                           placeholder="البحث بالاسم أو رقم الناخب أو الهاتف">
+                </div>
+                <div class="col-md-2">
+                    <label for="district" class="form-label">المنطقة</label>
+                    <select class="form-select" id="district" name="district">
+                        <option value="">جميع المناطق</option>
+                        {% for district in districts %}
+                            <option value="{{ district }}" {% if district_filter == district %}selected{% endif %}>{{ district }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="sub_district" class="form-label">الناحية</label>
+                    <select class="form-select" id="sub_district" name="sub_district">
+                        <option value="">جميع النواحي</option>
+                        {% for sub_district in sub_districts %}
+                            <option value="{{ sub_district }}" {% if sub_district_filter == sub_district %}selected{% endif %}>{{ sub_district }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="vote_status" class="form-label">حالة التصويت</label>
+                    <select class="form-select" id="vote_status" name="vote_status">
+                        <option value="">جميع الناخبين</option>
+                        <option value="voted" {% if request.GET.vote_status == 'voted' %}selected{% endif %}>صوتوا</option>
+                        <option value="not_voted" {% if request.GET.vote_status == 'not_voted' %}selected{% endif %}>لم يصوتوا</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-1"></i>
+                        بحث
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Statistics Summary for Voters -->
+    {% if stat_type == 'voters' and voted_count is not None %}
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                صوتوا
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ voted_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                لم يصوتوا
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ not_voted_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                المجموع
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Data Table -->
+    <div class="card shadow">
+        <div class="card-body">
+            {% if stat_type == 'entities' %}
+                <!-- Entities Table -->
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>#</th>
+                                <th>اسم الكيان</th>
+                                <th>عدد المرشحين</th>
+                                <th>عدد الناخبين</th>
+                                <th>تاريخ الإنشاء</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entity in entities %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ entity.entity_name }}</td>
+                                <td>{{ entity.candidates_count }}</td>
+                                <td>{{ entity.voters_count }}</td>
+                                <td>{{ entity.user.created_at|date:"Y/m/d" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">لا توجد كيانات</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            {% elif stat_type == 'candidates' %}
+                <!-- Candidates Table -->
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-success">
+                            <tr>
+                                <th>#</th>
+                                <th>اسم المرشح</th>
+                                {% if user_type == 'admin' %}<th>الكيان</th>{% endif %}
+                                <th>عدد الركائز</th>
+                                <th>عدد الناخبين</th>
+                                <th>تاريخ الإنشاء</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for candidate in candidates %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ candidate.user.full_name }}</td>
+                                {% if user_type == 'admin' %}<td>{{ candidate.entity.entity_name }}</td>{% endif %}
+                                <td>{{ candidate.pillars_count }}</td>
+                                <td>{{ candidate.voters_count }}</td>
+                                <td>{{ candidate.user.created_at|date:"Y/m/d" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="{% if user_type == 'admin' %}6{% else %}5{% endif %}" class="text-center text-muted">لا توجد مرشحين</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            {% elif stat_type == 'pillars' %}
+                <!-- Pillars Table -->
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-info">
+                            <tr>
+                                <th>#</th>
+                                <th>اسم الركيزة</th>
+                                {% if user_type == 'admin' %}<th>الكيان</th>{% endif %}
+                                {% if user_type == 'admin' or user_type == 'entity' %}<th>المرشح</th>{% endif %}
+                                <th>عدد الناخبين</th>
+                                <th>الهاتف</th>
+                                <th>تاريخ الإنشاء</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pillar in pillars %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ pillar.user.full_name }}</td>
+                                {% if user_type == 'admin' %}<td>{{ pillar.candidate.entity.entity_name }}</td>{% endif %}
+                                {% if user_type == 'admin' or user_type == 'entity' %}<td>{{ pillar.candidate.user.full_name }}</td>{% endif %}
+                                <td>{{ pillar.voters_count }}</td>
+                                <td>{{ pillar.user.phone_number|default:"-" }}</td>
+                                <td>{{ pillar.user.created_at|date:"Y/m/d" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="{% if user_type == 'admin' %}7{% elif user_type == 'entity' %}6{% else %}5{% endif %}" class="text-center text-muted">لا توجد ركائز</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            {% else %}
+                <!-- Voters Table -->
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-warning">
+                            <tr>
+                                <th>#</th>
+                                <th>اسم الناخب</th>
+                                <th>رقم الناخب</th>
+                                <th>حالة البطاقة</th>
+                                <th>الهاتف</th>
+                                {% if user_type == 'admin' %}<th>الكيان</th>{% endif %}
+                                {% if user_type == 'admin' or user_type == 'entity' %}<th>المرشح</th>{% endif %}
+                                {% if user_type != 'pillar' %}<th>الركيزة</th>{% endif %}
+                                <th>حالة التصويت</th>
+                                <th>تاريخ الإضافة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for voter in voters %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ voter.name }}</td>
+                                <td>{{ voter.voter_number }}</td>
+                                <td>
+                                    {% if voter.card_status == 'updated' %}
+                                        <span class="badge bg-success">محدثة</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">غير محدثة</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ voter.phone_number|default:"-" }}</td>
+                                {% if user_type == 'admin' %}<td>{{ voter.pillar.candidate.entity.entity_name }}</td>{% endif %}
+                                {% if user_type == 'admin' or user_type == 'entity' %}<td>{{ voter.pillar.candidate.user.full_name }}</td>{% endif %}
+                                {% if user_type != 'pillar' %}<td>{{ voter.pillar.user.full_name }}</td>{% endif %}
+                                <td>
+                                    {% if voter.voting_status == 'voted' %}
+                                        <span class="badge bg-success">صوت</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">لم يصوت</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ voter.created_at|date:"Y/m/d" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="{% if user_type == 'admin' %}10{% elif user_type == 'entity' %}9{% elif user_type == 'candidate' %}8{% else %}7{% endif %}" class="text-center text-muted">لا توجد ناخبين</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if voters.has_other_pages %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if voters.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if request.GET.vote_status %}&vote_status={{ request.GET.vote_status }}{% endif %}">&laquo; الأولى</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ voters.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if request.GET.vote_status %}&vote_status={{ request.GET.vote_status }}{% endif %}">السابقة</a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link">{{ voters.number }} من {{ voters.paginator.num_pages }}</span>
+                        </li>
+
+                        {% if voters.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ voters.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if request.GET.vote_status %}&vote_status={{ request.GET.vote_status }}{% endif %}">التالية</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ voters.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if request.GET.vote_status %}&vote_status={{ request.GET.vote_status }}{% endif %}">الأخيرة &raquo;</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-4">
+        <a href="javascript:history.back()" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-2"></i>
+            العودة
+        </a>
+    </div>
+</div>
+{% endblock %}

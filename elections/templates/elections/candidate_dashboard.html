@@ -113,22 +113,26 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- إحصائيات عامة -->
 <div class="row mb-4">
     <div class="col-md-2 mb-3">
-        <div class="card stats-card h-100">
-            <div class="card-body text-center">
-                <i class="fas fa-users fa-2x mb-3"></i>
-                <h3 class="fw-bold">{{ stats.total_voters }}</h3>
-                <p class="mb-0">إجمالي الناخبين</p>
+        <a href="{% url 'elections:statistics_detail' 'voters' %}" class="text-decoration-none">
+            <div class="card stats-card h-100 card-hover">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x mb-3"></i>
+                    <h3 class="fw-bold">{{ stats.total_voters }}</h3>
+                    <p class="mb-0">إجمالي الناخبين</p>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-2 mb-3">
-        <div class="card stats-card-success h-100">
-            <div class="card-body text-center">
-                <i class="fas fa-columns fa-2x mb-3"></i>
-                <h3 class="fw-bold">{{ stats.total_pillars }}</h3>
-                <p class="mb-0">عدد الركائز</p>
+        <a href="{% url 'elections:statistics_detail' 'pillars' %}" class="text-decoration-none">
+            <div class="card stats-card-success h-100 card-hover">
+                <div class="card-body text-center">
+                    <i class="fas fa-columns fa-2x mb-3"></i>
+                    <h3 class="fw-bold">{{ stats.total_pillars }}</h3>
+                    <p class="mb-0">عدد الركائز</p>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-2 mb-3">
         <div class="card stats-card-info h-100">
@@ -149,44 +153,52 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
     <div class="col-md-2 mb-3">
-        <div class="card bg-success text-white h-100">
-            <div class="card-body text-center">
-                <i class="fas fa-check-circle fa-2x mb-3"></i>
-                <h3 class="fw-bold">{{ stats.updated_cards }}</h3>
-                <p class="mb-0">محدثين</p>
+        <a href="{% url 'elections:statistics_detail' 'updated' %}" class="text-decoration-none">
+            <div class="card bg-success text-white h-100 card-hover">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x mb-3"></i>
+                    <h3 class="fw-bold">{{ stats.updated_cards }}</h3>
+                    <p class="mb-0">محدثين</p>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-2 mb-3">
-        <div class="card bg-warning text-white h-100">
-            <div class="card-body text-center">
-                <i class="fas fa-exclamation-circle fa-2x mb-3"></i>
-                <h3 class="fw-bold">{{ stats.not_updated_cards }}</h3>
-                <p class="mb-0">غير محدثين</p>
+        <a href="{% url 'elections:statistics_detail' 'not_updated' %}" class="text-decoration-none">
+            <div class="card bg-warning text-white h-100 card-hover">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-circle fa-2x mb-3"></i>
+                    <h3 class="fw-bold">{{ stats.not_updated_cards }}</h3>
+                    <p class="mb-0">غير محدثين</p>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 
 <!-- إحصائيات التصويت -->
 <div class="row mb-4">
     <div class="col-md-6 mb-3">
-        <div class="card bg-info text-white h-100">
-            <div class="card-body text-center">
-                <i class="fas fa-vote-yea fa-3x mb-3"></i>
-                <h2 class="fw-bold">{{ stats.voted }}</h2>
-                <p class="mb-0 fs-5">عدد المصوتين</p>
+        <a href="{% url 'elections:statistics_detail' 'voted' %}" class="text-decoration-none">
+            <div class="card bg-info text-white h-100 card-hover">
+                <div class="card-body text-center">
+                    <i class="fas fa-vote-yea fa-3x mb-3"></i>
+                    <h2 class="fw-bold">{{ stats.voted }}</h2>
+                    <p class="mb-0 fs-5">عدد المصوتين</p>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-6 mb-3">
-        <div class="card bg-secondary text-white h-100">
-            <div class="card-body text-center">
-                <i class="fas fa-user-times fa-3x mb-3"></i>
-                <h2 class="fw-bold">{{ stats.not_voted }}</h2>
-                <p class="mb-0 fs-5">عدد غير المصوتين</p>
+        <a href="{% url 'elections:statistics_detail' 'not_voted' %}" class="text-decoration-none">
+            <div class="card bg-secondary text-white h-100 card-hover">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-times fa-3x mb-3"></i>
+                    <h2 class="fw-bold">{{ stats.not_voted }}</h2>
+                    <p class="mb-0 fs-5">عدد غير المصوتين</p>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 

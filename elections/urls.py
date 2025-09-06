@@ -24,7 +24,7 @@ urlpatterns = [
     # لوحة تحكم الركيزة
     path('pillar/dashboard/', views.pillar_dashboard, name='pillar_dashboard'),
     path('pillar/add-voter/', views.add_voter, name='add_voter'),
-    path('pillar/upload-excel/', views.upload_excel_pillar, name='upload_excel_pillar'),
+
     path('pillar/update-voter-status/<int:voter_id>/', views.update_voter_status, name='update_voter_status'),
     
     # لوحة تحكم الإدارة
@@ -37,6 +37,9 @@ urlpatterns = [
     path('admin/delete-entity/<int:entity_id>/', views.delete_entity, name='delete_entity'),
     path('admin/edit-candidate/<int:candidate_id>/', views.edit_candidate, name='edit_candidate'),
     path('admin/delete-candidate/<int:candidate_id>/', views.delete_candidate, name='delete_candidate'),
+    
+    # صفحة تفاصيل الإحصائيات
+    path('statistics/<str:stat_type>/', views.statistics_detail, name='statistics_detail'),
     
     # API endpoints
     path('api/get-voter-stats/', views.get_voter_stats, name='get_voter_stats'),

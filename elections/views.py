@@ -147,6 +147,8 @@ def pillar_dashboard(request):
     search_query = request.GET.get('search', '')
     card_status_filter = request.GET.get('card_status', '')
     voting_status_filter = request.GET.get('voting_status', '')
+    district_filter = request.GET.get('district', '')
+    sub_district_filter = request.GET.get('sub_district', '')
     
     if search_query:
         voters = voters.filter(
@@ -160,6 +162,12 @@ def pillar_dashboard(request):
     
     if voting_status_filter:
         voters = voters.filter(voting_status=voting_status_filter)
+    
+    if district_filter:
+        voters = voters.filter(district=district_filter)
+    
+    if sub_district_filter:
+        voters = voters.filter(sub_district=sub_district_filter)
     
     # التصفح
     paginator = Paginator(voters, 25)
@@ -191,6 +199,11 @@ def pillar_dashboard(request):
         'update_percentage': update_percentage,
     }
     
+    # الحصول على قوائم المناطق والنواحي المتاحة
+    governorates = pillar.voters.values_list('governorate', flat=True).distinct().order_by('governorate')
+    districts = pillar.voters.values_list('district', flat=True).distinct().order_by('district')
+    sub_districts = pillar.voters.values_list('sub_district', flat=True).distinct().order_by('sub_district')
+    
     context = {
         'pillar': pillar,
         'voters': page_obj,
@@ -198,6 +211,11 @@ def pillar_dashboard(request):
         'search_query': search_query,
         'card_status_filter': card_status_filter,
         'voting_status_filter': voting_status_filter,
+        'district_filter': district_filter,
+        'sub_district_filter': sub_district_filter,
+        'governorates': governorates,
+        'districts': districts,
+        'sub_districts': sub_districts,
     }
     return render(request, 'elections/pillar_dashboard.html', context)
 
@@ -492,64 +510,7 @@ def upload_excel_candidate(request):
     
     return render(request, 'elections/upload_excel.html', {'type': 'candidate', 'title': 'رفع ملف الناخبين للمرشح'})
 
-# رفع ملف Excel للركيزة
-@login_required
-def upload_excel_pillar(request):
-    if request.user.user_type != 'pillar':
-        return redirect('elections:login')
-    
-    pillar = get_object_or_404(Pillar, user=request.user)
-    
-    if request.method == 'POST':
-        try:
-            if 'excel_file' not in request.FILES:
-                return JsonResponse({'success': False, 'error': 'لم يتم اختيار ملف'})
-            
-            excel_file = request.FILES['excel_file']
-            
-            # التحقق من نوع الملف
-            if not excel_file.name.endswith(('.xlsx', '.xls')):
-                return JsonResponse({'success': False, 'error': 'يجب أن يكون الملف من نوع Excel'})
-            
-            # قراءة ملف Excel
-            workbook = openpyxl.load_workbook(excel_file)
-            sheet = workbook.active
-            
-            # معالجة البيانات وإضافتها للقاعدة
-            created_count = 0
-            errors = []
-            
-            for row_num, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
-                try:
-                    # إنشاء ناخب جديد
-                    voter = Voter.objects.create(
-                        name=row[0] if row[0] else '',
-                        voter_number=row[1] if row[1] else '',
-                        phone_number=row[2] if row[2] else '',
-                        address=row[3] if row[3] else '',
-                        center_number=row[4] if row[4] else '',
-                        station=row[5] if row[5] else '',
-                        card_status=row[6] if row[6] else 'not_updated',
-                        voting_status=row[7] if row[7] else 'not_voted',
-                        notes=row[8] if row[8] else '',
-                        pillar=pillar,
-                        candidate=pillar.candidate
-                    )
-                    
-                    created_count += 1
-                except Exception as e:
-                    errors.append(f'الصف {row_num}: {str(e)}')
-            
-            return JsonResponse({
-                'success': True, 
-                'message': f'تم إنشاء {created_count} ناخب بنجاح',
-                'errors': errors
-            })
-            
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': f'خطأ في معالجة الملف: {str(e)}'})
-    
-    return render(request, 'elections/upload_excel.html', {'type': 'pillar', 'title': 'رفع ملف الناخبين للركيزة'})
+
 
 # API للحصول على إحصائيات الناخبين
 @csrf_exempt
@@ -842,3 +803,238 @@ def delete_candidate(request, candidate_id):
     
     context = {'candidate': candidate}
     return render(request, 'elections/delete_candidate.html', context)
+
+# صفحة تفاصيل الإحصائيات
+@login_required
+def statistics_detail(request, stat_type):
+    # التحقق من صلاحيات المستخدم
+    if request.user.user_type not in ['admin', 'entity', 'candidate', 'pillar']:
+        messages.error(request, 'ليس لديك صلاحية للوصول لهذه الصفحة')
+        return redirect('elections:login')
+    
+    context = {
+        'stat_type': stat_type,
+        'user_type': request.user.user_type,
+        'page_title': 'تفاصيل الإحصائيات'
+    }
+    
+    # تحديد البيانات حسب نوع الإحصائية ونوع المستخدم
+    if stat_type == 'entities':
+        if request.user.user_type == 'admin':
+            entities = Entity.objects.all().annotate(
+                candidates_count=Count('candidates'),
+                voters_count=Count('candidates__voters')
+            )
+            context.update({
+                'entities': entities,
+                'page_title': 'تفاصيل الكيانات',
+                'total_count': entities.count()
+            })
+        else:
+            messages.error(request, 'ليس لديك صلاحية لعرض هذه البيانات')
+            return redirect('elections:login')
+    
+    elif stat_type == 'candidates':
+        if request.user.user_type == 'admin':
+            candidates = Candidate.objects.all().select_related('entity').annotate(
+                pillars_count=Count('pillars'),
+                voters_count=Count('voters')
+            )
+        elif request.user.user_type == 'entity':
+            candidates = Candidate.objects.filter(entity=request.user.entity_profile).annotate(
+                pillars_count=Count('pillars'),
+                voters_count=Count('voters')
+            )
+        else:
+            messages.error(request, 'ليس لديك صلاحية لعرض هذه البيانات')
+            return redirect('elections:login')
+        
+        context.update({
+            'candidates': candidates,
+            'page_title': 'تفاصيل المرشحين',
+            'total_count': candidates.count()
+        })
+    
+    elif stat_type == 'pillars':
+        if request.user.user_type == 'admin':
+            pillars = Pillar.objects.all().select_related('candidate', 'candidate__entity').annotate(
+                voters_count=Count('voters')
+            )
+        elif request.user.user_type == 'entity':
+            pillars = Pillar.objects.filter(candidate__entity=request.user.entity_profile).select_related('candidate').annotate(
+                voters_count=Count('voters')
+            )
+        elif request.user.user_type == 'candidate':
+            pillars = Pillar.objects.filter(candidate=request.user.candidate_profile).annotate(
+                voters_count=Count('voters')
+            )
+        else:
+            messages.error(request, 'ليس لديك صلاحية لعرض هذه البيانات')
+            return redirect('elections:login')
+        
+        context.update({
+            'pillars': pillars,
+            'page_title': 'تفاصيل الركائز',
+            'total_count': pillars.count()
+        })
+    
+    elif stat_type == 'voters':
+        if request.user.user_type == 'admin':
+            voters = Voter.objects.all().select_related('pillar', 'pillar__candidate', 'pillar__candidate__entity')
+        elif request.user.user_type == 'entity':
+            voters = Voter.objects.filter(pillar__candidate__entity=request.user.entity_profile).select_related('pillar', 'pillar__candidate')
+        elif request.user.user_type == 'candidate':
+            voters = Voter.objects.filter(pillar__candidate=request.user.candidate_profile).select_related('pillar')
+        elif request.user.user_type == 'pillar':
+            voters = Voter.objects.filter(pillar=request.user.pillar_profile)
+        
+        # تطبيق التصفية حسب حالة التصويت إذا تم تمريرها
+        vote_status = request.GET.get('vote_status')
+        if vote_status == 'voted':
+            voters = voters.filter(voting_status='voted')
+            context['filter_status'] = 'صوتوا'
+        elif vote_status == 'not_voted':
+            voters = voters.filter(voting_status='not_voted')
+            context['filter_status'] = 'لم يصوتوا'
+        
+        # تطبيق البحث والفلترة
+        search_query = request.GET.get('search')
+        district_filter = request.GET.get('district')
+        sub_district_filter = request.GET.get('sub_district')
+        
+        if search_query:
+            voters = voters.filter(
+                    Q(name__icontains=search_query) |
+                    Q(voter_number__icontains=search_query) |
+                    Q(phone_number__icontains=search_query)
+                )
+            context['search_query'] = search_query
+        
+        if district_filter:
+            voters = voters.filter(district=district_filter)
+            context['district_filter'] = district_filter
+        
+        if sub_district_filter:
+            voters = voters.filter(sub_district=sub_district_filter)
+            context['sub_district_filter'] = sub_district_filter
+        
+        # التصفح
+        paginator = Paginator(voters, 50)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        # الحصول على قوائم المناطق والنواحي المتاحة
+        all_voters_for_filters = voters.model.objects.all()
+        if request.user.user_type == 'entity':
+            all_voters_for_filters = voters.model.objects.filter(pillar__candidate__entity=request.user.entity_profile)
+        elif request.user.user_type == 'candidate':
+            all_voters_for_filters = voters.model.objects.filter(pillar__candidate=request.user.candidate_profile)
+        elif request.user.user_type == 'pillar':
+            all_voters_for_filters = voters.model.objects.filter(pillar=request.user.pillar_profile)
+        
+        districts = all_voters_for_filters.values_list('district', flat=True).distinct().order_by('district')
+        sub_districts = all_voters_for_filters.values_list('sub_district', flat=True).distinct().order_by('sub_district')
+        
+        context.update({
+            'voters': page_obj,
+            'page_title': 'تفاصيل الناخبين',
+            'total_count': voters.count(),
+            'voted_count': voters.filter(voting_status='voted').count(),
+            'not_voted_count': voters.filter(voting_status='not_voted').count(),
+            'districts': districts,
+            'sub_districts': sub_districts,
+        })
+    
+    elif stat_type == 'voted':
+        # إحصائيات المصوتين
+        if request.user.user_type == 'admin':
+            voters = Voter.objects.filter(voting_status='voted').select_related('pillar', 'pillar__candidate', 'pillar__candidate__entity')
+        elif request.user.user_type == 'entity':
+            voters = Voter.objects.filter(voting_status='voted', pillar__candidate__entity=request.user.entity_profile).select_related('pillar', 'pillar__candidate')
+        elif request.user.user_type == 'candidate':
+            voters = Voter.objects.filter(voting_status='voted', pillar__candidate=request.user.candidate_profile).select_related('pillar')
+        elif request.user.user_type == 'pillar':
+            voters = Voter.objects.filter(voting_status='voted', pillar=request.user.pillar_profile)
+        
+        # التصفح
+        paginator = Paginator(voters, 50)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        context.update({
+            'voters': page_obj,
+            'page_title': 'الناخبون الذين صوتوا',
+            'total_count': voters.count()
+        })
+    
+    elif stat_type == 'not_voted':
+        # إحصائيات غير المصوتين
+        if request.user.user_type == 'admin':
+            voters = Voter.objects.filter(voting_status='not_voted').select_related('pillar', 'pillar__candidate', 'pillar__candidate__entity')
+        elif request.user.user_type == 'entity':
+            voters = Voter.objects.filter(voting_status='not_voted', pillar__candidate__entity=request.user.entity_profile).select_related('pillar', 'pillar__candidate')
+        elif request.user.user_type == 'candidate':
+            voters = Voter.objects.filter(voting_status='not_voted', pillar__candidate=request.user.candidate_profile).select_related('pillar')
+        elif request.user.user_type == 'pillar':
+            voters = Voter.objects.filter(voting_status='not_voted', pillar=request.user.pillar_profile)
+        
+        # التصفح
+        paginator = Paginator(voters, 50)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        context.update({
+            'voters': page_obj,
+            'page_title': 'الناخبون الذين لم يصوتوا',
+            'total_count': voters.count()
+        })
+    
+    elif stat_type == 'updated':
+        # إحصائيات المحدثين
+        if request.user.user_type == 'admin':
+            voters = Voter.objects.filter(card_status='updated').select_related('pillar', 'pillar__candidate', 'pillar__candidate__entity')
+        elif request.user.user_type == 'entity':
+            voters = Voter.objects.filter(card_status='updated', pillar__candidate__entity=request.user.entity_profile).select_related('pillar', 'pillar__candidate')
+        elif request.user.user_type == 'candidate':
+            voters = Voter.objects.filter(card_status='updated', pillar__candidate=request.user.candidate_profile).select_related('pillar')
+        elif request.user.user_type == 'pillar':
+            voters = Voter.objects.filter(card_status='updated', pillar=request.user.pillar_profile)
+        
+        # التصفح
+        paginator = Paginator(voters, 50)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        context.update({
+            'voters': page_obj,
+            'page_title': 'الناخبون المحدثون',
+            'total_count': voters.count()
+        })
+    
+    elif stat_type == 'not_updated':
+        # إحصائيات غير المحدثين
+        if request.user.user_type == 'admin':
+            voters = Voter.objects.filter(card_status='not_updated').select_related('pillar', 'pillar__candidate', 'pillar__candidate__entity')
+        elif request.user.user_type == 'entity':
+            voters = Voter.objects.filter(card_status='not_updated', pillar__candidate__entity=request.user.entity_profile).select_related('pillar', 'pillar__candidate')
+        elif request.user.user_type == 'candidate':
+            voters = Voter.objects.filter(card_status='not_updated', pillar__candidate=request.user.candidate_profile).select_related('pillar')
+        elif request.user.user_type == 'pillar':
+            voters = Voter.objects.filter(card_status='not_updated', pillar=request.user.pillar_profile)
+        
+        # التصفح
+        paginator = Paginator(voters, 50)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        context.update({
+            'voters': page_obj,
+            'page_title': 'الناخبون غير المحدثين',
+            'total_count': voters.count()
+        })
+    
+    else:
+        messages.error(request, 'نوع الإحصائية غير صحيح')
+        return redirect('elections:admin_dashboard')
+    
+    return render(request, 'elections/statistics_detail.html', context)

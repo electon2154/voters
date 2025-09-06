@@ -20,75 +20,83 @@
                 <!-- Statistics Cards -->
                 <div class="row mb-4">
                     <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-primary shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                            إجمالي الكيانات
+                        <a href="{% url 'elections:statistics_detail' 'entities' %}" class="text-decoration-none">
+                            <div class="card border-left-primary shadow h-100 py-2 card-hover">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                إجمالي الكيانات
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_entities }}</div>
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_entities }}</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-building fa-2x text-gray-300"></i>
+                                        <div class="col-auto">
+                                            <i class="fas fa-building fa-2x text-gray-300"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                     
                     <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-success shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                            إجمالي المرشحين
+                        <a href="{% url 'elections:statistics_detail' 'candidates' %}" class="text-decoration-none">
+                            <div class="card border-left-success shadow h-100 py-2 card-hover">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                إجمالي المرشحين
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_candidates }}</div>
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_candidates }}</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                                        <div class="col-auto">
+                                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                     
                     <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-info shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                            إجمالي الركائز
+                        <a href="{% url 'elections:statistics_detail' 'pillars' %}" class="text-decoration-none">
+                            <div class="card border-left-info shadow h-100 py-2 card-hover">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                إجمالي الركائز
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_pillars }}</div>
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_pillars }}</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-user-friends fa-2x text-gray-300"></i>
+                                        <div class="col-auto">
+                                            <i class="fas fa-user-friends fa-2x text-gray-300"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                     
                     <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-warning shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                            إجمالي الناخبين
+                        <a href="{% url 'elections:statistics_detail' 'voters' %}" class="text-decoration-none">
+                            <div class="card border-left-warning shadow h-100 py-2 card-hover">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                إجمالي الناخبين
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_voters }}</div>
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_voters }}</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-vote-yea fa-2x text-gray-300"></i>
+                                        <div class="col-auto">
+                                            <i class="fas fa-vote-yea fa-2x text-gray-300"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 </div>
                 
@@ -105,16 +113,20 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-6">
-                                        <div class="text-center">
-                                            <div class="h4 text-success">{{ voted_count }}</div>
-                                            <div class="text-muted">صوتوا</div>
-                                        </div>
+                                        <a href="{% url 'elections:statistics_detail' 'voted' %}" class="text-decoration-none">
+                                            <div class="text-center p-2 rounded card-hover">
+                                                <div class="h4 text-success">{{ voted_count }}</div>
+                                                <div class="text-muted">صوتوا</div>
+                                            </div>
+                                        </a>
                                     </div>
                                     <div class="col-6">
-                                        <div class="text-center">
-                                            <div class="h4 text-danger">{{ not_voted_count }}</div>
-                                            <div class="text-muted">لم يصوتوا</div>
-                                        </div>
+                                        <a href="{% url 'elections:statistics_detail' 'not_voted' %}" class="text-decoration-none">
+                                            <div class="text-center p-2 rounded card-hover">
+                                                <div class="h4 text-danger">{{ not_voted_count }}</div>
+                                                <div class="text-muted">لم يصوتوا</div>
+                                            </div>
+                                        </a>
                                     </div>
                                 </div>
                                 <div class="progress mt-3">
