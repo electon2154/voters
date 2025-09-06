@@ -120,15 +120,17 @@ def candidate_dashboard(request):
     
     context = {
         'candidate': candidate,
-        'total_pillars': total_pillars,
-        'total_voters': total_voters,
-        'total_centers': total_centers,
-        'total_stations': total_stations,
-        'updated_voters': updated_voters,
-        'not_updated_voters': not_updated_voters,
-        'voted_voters': voted_voters,
-        'not_voted_voters': not_voted_voters,
         'pillars': pillars,
+        'stats': {
+            'total_pillars': total_pillars,
+            'total_voters': total_voters,
+            'total_centers': total_centers,
+            'total_stations': total_stations,
+            'updated_cards': updated_voters,
+            'not_updated_cards': not_updated_voters,
+            'voted': voted_voters,
+            'not_voted': not_voted_voters,
+        }
     }
     return render(request, 'elections/candidate_dashboard.html', context)
 
