@@ -1,0 +1,456 @@
+{% extends 'elections/base.html' %}
+
+{% block title %}لوحة تحكم الكيان - {{ entity.entity_name }}{% endblock %}
+
+{% block content %}
+<style>
+.candidate-progress {
+    height: 12px;
+    background-color: #e9ecef;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+}
+.candidate-progress .progress-bar {
+    transition: width 0.6s ease;
+    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+    border-radius: 6px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set progress bar widths dynamically to avoid template tag issues in CSS
+    const progressBars = document.querySelectorAll('.candidate-progress .progress-bar');
+    progressBars.forEach(function(bar) {
+        const percentage = bar.getAttribute('data-percentage');
+        if (percentage) {
+            bar.style.width = percentage + '%';
+        }
+    });
+});
+</script>
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="fas fa-building me-2 text-primary"></i>
+                مرحباً بك، {{ entity.entity_name }}
+            </h2>
+            <p class="text-muted mb-0">لوحة تحكم الكيان - إدارة المرشحين والإحصائيات</p>
+        </div>
+        <div>
+            {% if entity.logo %}
+                <img src="{{ entity.logo.url }}" alt="شعار الكيان" class="rounded" style="width: 60px; height: 60px; object-fit: cover;">
+            {% else %}
+                <div class="bg-primary rounded d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="fas fa-building text-white fa-2x"></i>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- إحصائيات عامة -->
+<div class="row mb-4">
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="card bg-primary text-white h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="card-title">{{ stats.total_voters|default:0 }}</h4>
+                                        <p class="card-text">إجمالي الناخبين</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-users fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="card bg-success text-white h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="card-title">{{ stats.total_candidates|default:0 }}</h4>
+                                        <p class="card-text">المرشحون</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-user-tie fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="card bg-info text-white h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="card-title">{{ stats.total_pillars|default:0 }}</h4>
+                                        <p class="card-text">الركائز</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-user-friends fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="card bg-warning text-dark h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="card-title">{{ stats.total_centers|default:0 }}</h4>
+                                        <p class="card-text">مراكز الاقتراع</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-building fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+</div>
+
+<!-- إحصائيات التصويت -->
+<div class="row mb-4">
+    <div class="col-md-2 mb-3">
+        <div class="card bg-light h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-building text-primary fa-2x mb-2"></i>
+                <h4 class="fw-bold text-primary">{{ stats.total_stations }}</h4>
+                <small class="text-muted">المحطات</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                <h4 class="fw-bold">{{ stats.updated_cards }}</h4>
+                <small>محدثين</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card bg-warning text-white h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
+                <h4 class="fw-bold">{{ stats.not_updated_cards }}</h4>
+                <small>غير محدثين</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-vote-yea fa-2x mb-2"></i>
+                <h4 class="fw-bold">{{ stats.voted_voters }}</h4>
+                <small>صوتوا</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-secondary text-white h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-user-times fa-2x mb-2"></i>
+                <h4 class="fw-bold">{{ stats.not_voted_voters }}</h4>
+                <small>لم يصوتوا</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- كارتات المرشحين -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    المرشحون
+                </h5>
+                <a href="{% url 'elections:add_candidate' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-2"></i>
+                    إضافة مرشح
+                </a>
+            </div>
+            
+            <!-- فلاتر البحث للمرشحين -->
+            <div class="row mb-3 px-3">
+                <div class="col-md-4">
+                    <input type="text" id="searchCandidates" class="form-control form-control-sm" placeholder="البحث بالاسم...">
+                </div>
+                <div class="col-md-3">
+                    <select id="filterVotingRange" class="form-select form-select-sm">
+                        <option value="">جميع النسب</option>
+                        <option value="high">نسبة عالية (70%+)</option>
+                        <option value="medium">نسبة متوسطة (40-70%)</option>
+                        <option value="low">نسبة منخفضة (أقل من 40%)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select id="sortCandidates" class="form-select form-select-sm">
+                        <option value="name">ترتيب بالاسم</option>
+                        <option value="voting_desc">الأعلى تصويتاً</option>
+                        <option value="voting_asc">الأقل تصويتاً</option>
+                        <option value="pillars_desc">الأكثر ركائز</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" id="clearCandidateFilters" class="btn btn-outline-secondary btn-sm w-100">
+                        <i class="fas fa-times me-1"></i>
+                        مسح
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row" id="candidatesContainer">
+                    {% for stat in candidate_stats %}
+                    <div class="col-md-6 col-lg-4 mb-4 candidate-item" 
+                         data-name="{{ stat.candidate.user.full_name|lower }}" 
+                         data-voting="{{ stat.voting_percentage|default:0 }}" 
+                         data-pillars="{{ stat.pillars_count|default:0 }}">
+                        <div class="card candidate-card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="candidate-avatar me-3">
+                                        {% if stat.candidate.profile_image %}
+                                            <img src="{{ stat.candidate.profile_image.url }}" alt="{{ stat.candidate.user.full_name }}" 
+                                                 class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% else %}
+                                            {% load static %}
+                                            <img src="{% static 'elections/images/default-avatar.svg' %}" alt="{{ stat.candidate.user.full_name }}" 
+                                                 class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover; background-color: #f8f9fa; border: 2px solid #dee2e6;">
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 fw-bold">{{ stat.candidate.user.full_name }}</h6>
+                                        <small class="text-muted">{{ stat.candidate.user.phone_number|default:"لا يوجد رقم هاتف" }}</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="candidate-stats mb-3">
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <div class="stat-item p-2 bg-light rounded">
+                                                <h6 class="text-success mb-1">{{ stat.voted_count|default:0 }}</h6>
+                                                <small class="text-muted">صوت</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="stat-item p-2 bg-light rounded">
+                                                <h6 class="text-warning mb-1">{{ stat.not_voted_count|default:0 }}</h6>
+                                                <small class="text-muted">لم يصوت</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="stat-item p-2 bg-light rounded">
+                                                <h6 class="text-info mb-1">{{ stat.pillars_count|default:0 }}</h6>
+                                                <small class="text-muted">ركائز</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small class="text-muted">نسبة التصويت</small>
+                                        <small class="fw-bold">{{ stat.voting_percentage|floatformat:1 }}%</small>
+                                    </div>
+                                    <div class="progress candidate-progress">
+                                        <div class="progress-bar bg-success" 
+                                             role="progressbar" 
+                                             data-percentage="{{ stat.voting_percentage|floatformat:1 }}"
+                                             aria-valuenow="{{ stat.voting_percentage|floatformat:1 }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-primary btn-sm flex-fill">
+                                        <i class="fas fa-eye me-1"></i>
+                                        عرض
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm flex-fill">
+                                        <i class="fas fa-edit me-1"></i>
+                                        تعديل
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="fas fa-user-plus fa-4x text-muted"></i>
+                            </div>
+                            <h5 class="text-muted mb-3">لا يوجد مرشحون</h5>
+                            <p class="text-muted mb-4">قم بإضافة مرشحين جدد للبدء في إدارة الحملة الانتخابية</p>
+                            <a href="{% url 'elections:add_candidate' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus me-2"></i>
+                                إضافة أول مرشح
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- رسم بياني للإحصائيات -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h6 class="fw-bold mb-0">
+                    <i class="fas fa-chart-pie me-2 text-primary"></i>
+                    إحصائيات التصويت
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="votingChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h6 class="fw-bold mb-0">
+                    <i class="fas fa-chart-bar me-2 text-primary"></i>
+                    إحصائيات البطاقات
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="cardsChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// تحديث الإحصائيات كل 30 ثانية
+function updateStats() {
+    fetch(window.location.href)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // تحديث الإحصائيات
+            const statsCards = document.querySelectorAll('.stats-card .display-6');
+            const newStatsCards = doc.querySelectorAll('.stats-card .display-6');
+            
+            statsCards.forEach((card, index) => {
+                if (newStatsCards[index]) {
+                    card.textContent = newStatsCards[index].textContent;
+                }
+            });
+        })
+        .catch(error => console.log('خطأ في تحديث البيانات:', error));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // تحديث الإحصائيات كل 30 ثانية
+    setInterval(updateStats, 30000);
+    
+    // تأثيرات بصرية للكارتات
+    document.querySelectorAll('.candidate-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+        });
+    });
+    
+    // فلترة وبحث المرشحين
+    const searchCandidates = document.getElementById('searchCandidates');
+    const filterVotingRange = document.getElementById('filterVotingRange');
+    const sortCandidates = document.getElementById('sortCandidates');
+    const clearCandidateFilters = document.getElementById('clearCandidateFilters');
+    const candidatesContainer = document.getElementById('candidatesContainer');
+    
+    function filterAndSortCandidates() {
+        const searchValue = searchCandidates.value.toLowerCase();
+        const votingFilter = filterVotingRange.value;
+        const sortBy = sortCandidates.value;
+        
+        let candidates = Array.from(document.querySelectorAll('.candidate-item'));
+        
+        // فلترة
+        candidates.forEach(candidate => {
+            const name = candidate.dataset.name;
+            const voting = parseFloat(candidate.dataset.voting);
+            
+            let show = true;
+            
+            // فلترة بالاسم
+            if (searchValue && !name.includes(searchValue)) {
+                show = false;
+            }
+            
+            // فلترة بنسبة التصويت
+            if (votingFilter) {
+                if (votingFilter === 'high' && voting < 70) show = false;
+                if (votingFilter === 'medium' && (voting < 40 || voting >= 70)) show = false;
+                if (votingFilter === 'low' && voting >= 40) show = false;
+            }
+            
+            candidate.style.display = show ? 'block' : 'none';
+        });
+        
+        // ترتيب
+        const visibleCandidates = candidates.filter(c => c.style.display !== 'none');
+        visibleCandidates.sort((a, b) => {
+            switch(sortBy) {
+                case 'name':
+                    return a.dataset.name.localeCompare(b.dataset.name);
+                case 'voting_desc':
+                    return parseFloat(b.dataset.voting) - parseFloat(a.dataset.voting);
+                case 'voting_asc':
+                    return parseFloat(a.dataset.voting) - parseFloat(b.dataset.voting);
+                case 'pillars_desc':
+                    return parseInt(b.dataset.pillars) - parseInt(a.dataset.pillars);
+                default:
+                    return 0;
+            }
+        });
+        
+        // إعادة ترتيب العناصر
+        visibleCandidates.forEach(candidate => {
+            candidatesContainer.appendChild(candidate);
+        });
+    }
+    
+    if (searchCandidates) {
+        searchCandidates.addEventListener('input', filterAndSortCandidates);
+        filterVotingRange.addEventListener('change', filterAndSortCandidates);
+        sortCandidates.addEventListener('change', filterAndSortCandidates);
+        
+        clearCandidateFilters.addEventListener('click', function() {
+            searchCandidates.value = '';
+            filterVotingRange.value = '';
+            sortCandidates.value = 'name';
+            filterAndSortCandidates();
+        });
+    }
+});
+</script>
+{% endblock %}

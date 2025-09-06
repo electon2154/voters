@@ -1,0 +1,168 @@
+{% extends 'elections/base.html' %}
+
+{% block title %}إدارة المرشحين - نظام مراقبة الانتخابات{% endblock %}
+
+{% block content %}
+<div class="p-4">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="text-primary">
+                        <i class="fas fa-users me-2"></i>
+                        إدارة المرشحين
+                    </h2>
+                    <a href="{% url 'elections:create_candidate' %}" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>
+                        إضافة مرشح جديد
+                    </a>
+                </div>
+                
+                <!-- Search and Filter Bar -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <form method="get" class="d-flex">
+                            <input type="text" class="form-control me-2" name="search" placeholder="البحث في المرشحين..." value="{{ request.GET.search }}">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-6">
+                        <form method="get" class="d-flex">
+                            <select class="form-select me-2" name="entity_filter">
+                                <option value="">جميع الكيانات</option>
+                                {% for entity in entities %}
+                                    <option value="{{ entity.id }}" {% if request.GET.entity_filter == entity.id|stringformat:'s' %}selected{% endif %}>
+                                        {{ entity.entity_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-outline-secondary">
+                                <i class="fas fa-filter"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Candidates Table -->
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            قائمة المرشحين ({{ page_obj.paginator.count }} مرشح)
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if page_obj %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>اسم المرشح</th>
+                                            <th>الكيان</th>
+                                            <th>اسم المستخدم</th>
+                                            <th>رقم الهاتف</th>
+                                            <th>عدد الركائز</th>
+                                            <th>تاريخ الإنشاء</th>
+                                            <th>الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for candidate in page_obj %}
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-user-tie me-2 text-success"></i>
+                                                        <strong class="text-primary">{{ candidate.user.full_name }}</strong>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-primary">{{ candidate.entity.entity_name }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary">{{ candidate.user.username }}</span>
+                                                </td>
+                                                <td>
+                                                    {% if candidate.user.phone_number %}
+                                                        <i class="fas fa-phone me-1"></i>
+                                                        {{ candidate.user.phone_number }}
+                                                    {% else %}
+                                                        <span class="text-muted">غير محدد</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-info">{{ candidate.pillars_count }}</span>
+                                                </td>
+                                                <td>
+                                                    <small class="text-muted">{{ candidate.user.created_at|date:"Y/m/d" }}</small>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm" role="group">
+                                                        <a href="{% url 'elections:edit_candidate' candidate.id %}" class="btn btn-outline-warning" title="تعديل">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <a href="{% url 'elections:delete_candidate' candidate.id %}" class="btn btn-outline-danger" title="حذف">
+                                                            <i class="fas fa-trash"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Pagination -->
+                            {% if page_obj.has_other_pages %}
+                                <div class="card-footer">
+                                    <nav aria-label="تنقل الصفحات">
+                                        <ul class="pagination justify-content-center mb-0">
+                                            {% if page_obj.has_previous %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.entity_filter %}&entity_filter={{ request.GET.entity_filter }}{% endif %}">
+                                                        الأولى
+                                                    </a>
+                                                </li>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.entity_filter %}&entity_filter={{ request.GET.entity_filter }}{% endif %}">
+                                                        السابقة
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                            
+                                            <li class="page-item active">
+                                                <span class="page-link">
+                                                    {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}
+                                                </span>
+                                            </li>
+                                            
+                                            {% if page_obj.has_next %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.entity_filter %}&entity_filter={{ request.GET.entity_filter }}{% endif %}">
+                                                        التالية
+                                                    </a>
+                                                </li>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.entity_filter %}&entity_filter={{ request.GET.entity_filter }}{% endif %}">
+                                                        الأخيرة
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                    </nav>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">لا يوجد مرشحون</h5>
+                                <p class="text-muted">لم يتم إنشاء أي مرشحين بعد</p>
+                                <a href="{% url 'elections:create_candidate' %}" class="btn btn-success">
+                                    <i class="fas fa-plus me-2"></i>
+                                    إنشاء أول مرشح
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+</div>
+{% endblock %}

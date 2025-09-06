@@ -1,0 +1,316 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}رفع ملف Excel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-file-excel me-2"></i>
+                        رفع ملف Excel
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- تعليمات الاستخدام -->
+                    <div class="alert alert-info mb-4">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>
+                            تعليمات رفع الملف
+                        </h5>
+                        <hr>
+                        <ul class="mb-0">
+                            <li>يجب أن يكون الملف بصيغة Excel (.xlsx أو .xls)</li>
+                            <li>يجب أن تحتوي الورقة الأولى على البيانات</li>
+                            <li>الصف الأول يجب أن يحتوي على عناوين الأعمدة</li>
+                            <li>الأعمدة المطلوبة: الاسم، الرقم الوطني، الهاتف، العنوان، مركز الاقتراع، محطة الاقتراع</li>
+                        </ul>
+                    </div>
+                    
+                    <form id="uploadForm" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="excel_file" class="form-label fw-bold">
+                                <i class="fas fa-file-excel me-2 text-success"></i>
+                                اختر ملف Excel
+                            </label>
+                            <input type="file" class="form-control form-control-lg" id="excel_file" name="excel_file" 
+                                   accept=".xlsx,.xls" required>
+                            <div class="invalid-feedback">
+                                يرجى اختيار ملف Excel صالح
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                الملفات المدعومة: .xlsx, .xls (الحد الأقصى: 10 ميجابايت)
+                            </div>
+                        </div>
+                        
+                        <!-- معلومات تنسيق الملف -->
+                        <div class="alert alert-info mb-4">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-table me-2"></i>
+                                تنسيق الملف المطلوب:
+                            </h6>
+                            {% if type == 'entity' %}
+                            <p class="mb-2">يجب أن يحتوي الملف على الأعمدة التالية:</p>
+                            <ul class="mb-0">
+                                <li>username - اسم المستخدم</li>
+                                <li>email - البريد الإلكتروني</li>
+                                <li>first_name - الاسم الأول</li>
+                                <li>last_name - اسم العائلة</li>
+                                <li>phone - رقم الهاتف</li>
+                                <li>address - العنوان</li>
+                            </ul>
+                            {% elif type == 'candidate' or type == 'pillar' %}
+                            <p class="mb-2">يجب أن يحتوي الملف على الأعمدة التالية بالترتيب:</p>
+                            <ol class="mb-0">
+                                <li>الاسم الكامل</li>
+                                <li>رقم الناخب</li>
+                                <li>رقم الهاتف</li>
+                                <li>العنوان</li>
+                                <li>رقم المركز</li>
+                                <li>المحطة</li>
+                                <li>حالة البطاقة (محدث/غير محدث)</li>
+                                <li>حالة التصويت (صوت/لم يصوت)</li>
+                                <li>ملاحظات</li>
+                            </ol>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- معاينة الملف -->
+                        <div id="file-preview" class="mb-4" style="display: none;">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-eye me-2"></i>
+                                        معاينة الملف المحدد
+                                    </h6>
+                                    <div id="file-info"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            {% if request.user.user_type == 'entity' %}
+                                <a href="{% url 'elections:admin_dashboard' %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-right me-2"></i>
+                                    العودة
+                                </a>
+                            {% elif request.user.user_type == 'candidate' %}
+                                <a href="{% url 'elections:candidate_dashboard' %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-right me-2"></i>
+                                    العودة
+                                </a>
+                            {% elif request.user.user_type == 'pillar' %}
+                                <a href="{% url 'elections:pillar_dashboard' %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-right me-2"></i>
+                                    العودة
+                                </a>
+                            {% endif %}
+                            
+                            <button type="submit" class="btn btn-warning text-dark" id="upload-btn" disabled>
+                                <i class="fas fa-upload me-2"></i>
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" style="display: none;"></span>
+                                رفع الملف
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        padding: 10px 15px;
+    }
+    
+    .form-control:focus {
+        border-color: #ffc107;
+        box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+    }
+    
+    .btn {
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+    }
+    
+    .card {
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-header {
+        border-radius: 12px 12px 0 0 !important;
+    }
+    
+    .input-group-text {
+        border-radius: 0 8px 8px 0;
+        background-color: #f8f9fa;
+        border-color: #ddd;
+    }
+    
+    #file-preview {
+        animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('excel_file');
+    const uploadBtn = document.getElementById('upload-btn');
+    const filePreview = document.getElementById('file-preview');
+    const fileInfo = document.getElementById('file-info');
+    
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        
+        if (file) {
+            // التحقق من نوع الملف
+            const allowedTypes = ['.xlsx', '.xls'];
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (!allowedTypes.includes(fileExtension)) {
+                alert('يرجى اختيار ملف Excel صالح (.xlsx أو .xls)');
+                fileInput.value = '';
+                filePreview.style.display = 'none';
+                uploadBtn.disabled = true;
+                return;
+            }
+            
+            // التحقق من حجم الملف (10 ميجابايت)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت');
+                fileInput.value = '';
+                filePreview.style.display = 'none';
+                uploadBtn.disabled = true;
+                return;
+            }
+            
+            // عرض معلومات الملف
+            fileInfo.innerHTML = `
+                <p class="mb-1"><strong>اسم الملف:</strong> ${file.name}</p>
+                <p class="mb-1"><strong>الحجم:</strong> ${(file.size / 1024 / 1024).toFixed(2)} ميجابايت</p>
+                <p class="mb-0"><strong>النوع:</strong> ${file.type || 'غير محدد'}</p>
+            `;
+            
+            filePreview.style.display = 'block';
+            uploadBtn.disabled = false;
+        } else {
+            filePreview.style.display = 'none';
+            uploadBtn.disabled = true;
+        }
+    });
+    
+    // معالجة رفع الملف
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const submitBtn = document.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        // تعطيل الزر وإظهار مؤشر التحميل
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الرفع...';
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // إظهار رسالة نجاح
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    <i class="fas fa-check-circle me-2"></i>
+                    ${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                // إضافة الأخطاء إن وجدت
+                if (data.errors && data.errors.length > 0) {
+                    alertDiv.innerHTML += '<hr><strong>تحذيرات:</strong><ul>';
+                    data.errors.forEach(error => {
+                        alertDiv.innerHTML += `<li>${error}</li>`;
+                    });
+                    alertDiv.innerHTML += '</ul>';
+                }
+                
+                document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('form'));
+                
+                // إعادة تعيين النموذج
+                document.getElementById('uploadForm').reset();
+                document.getElementById('file-preview').style.display = 'none';
+                
+            } else {
+                // إظهار رسالة خطأ
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${data.error}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('form'));
+            }
+        })
+        .catch(error => {
+            console.error('خطأ:', error);
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                حدث خطأ أثناء رفع الملف. يرجى المحاولة مرة أخرى.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('form'));
+        })
+        .finally(() => {
+            // إعادة تفعيل الزر
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+    });
+    
+    // التحقق من صحة النموذج
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}إضافة ناخبين للمرشح{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        إضافة ناخبين للمرشح
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        يمكنك إضافة ناخبين جدد لحملتك الانتخابية من هنا
+                    </div>
+                    
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.voter_number.label_tag }}
+                                {{ form.voter_number }}
+                                {% if form.voter_number.errors %}
+                                    <div class="text-danger">
+                                        {{ form.voter_number.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.name.label_tag }}
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger">
+                                        {{ form.name.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.governorate.label_tag }}
+                                {{ form.governorate }}
+                                {% if form.governorate.errors %}
+                                    <div class="text-danger">
+                                        {{ form.governorate.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.district.label_tag }}
+                                {{ form.district }}
+                                {% if form.district.errors %}
+                                    <div class="text-danger">
+                                        {{ form.district.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.sub_district.label_tag }}
+                                {{ form.sub_district }}
+                                {% if form.sub_district.errors %}
+                                    <div class="text-danger">
+                                        {{ form.sub_district.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.card_status.label_tag }}
+                                {{ form.card_status }}
+                                {% if form.card_status.errors %}
+                                    <div class="text-danger">
+                                        {{ form.card_status.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.center_name.label_tag }}
+                                {{ form.center_name }}
+                                {% if form.center_name.errors %}
+                                    <div class="text-danger">
+                                        {{ form.center_name.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.center_number.label_tag }}
+                                {{ form.center_number }}
+                                {% if form.center_number.errors %}
+                                    <div class="text-danger">
+                                        {{ form.center_number.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.station.label_tag }}
+                                {{ form.station }}
+                                {% if form.station.errors %}
+                                    <div class="text-danger">
+                                        {{ form.station.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.phone_number.label_tag }}
+                                {{ form.phone_number }}
+                                {% if form.phone_number.errors %}
+                                    <div class="text-danger">
+                                        {{ form.phone_number.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                {{ form.pillar.label_tag }}
+                                {{ form.pillar }}
+                                {% if form.pillar.errors %}
+                                    <div class="text-danger">
+                                        {{ form.pillar.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    اختر الركيزة المسؤولة عن هذا الناخب أو اختر نفسك كمرشح لإدارة الناخب مباشرة
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'elections:candidate_dashboard' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-right me-2"></i>
+                                العودة
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i>
+                                إضافة الناخب
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Bootstrap form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+{% endblock %}

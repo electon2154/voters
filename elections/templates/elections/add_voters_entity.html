@@ -1,0 +1,153 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}إضافة ناخبين للكيان{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        إضافة ناخبين للكيان
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        يمكنك إضافة ناخبين جدد للكيان من هنا. سيتم ربطهم بالمرشحين والركائز المناسبة.
+                    </div>
+                    
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_candidate" class="form-label">المرشح *</label>
+                                <select name="candidate" id="id_candidate" class="form-select" dir="rtl" required>
+                                    <option value="">اختر المرشح</option>
+                                    {% for candidate in candidates %}
+                                        <option value="{{ candidate.id }}">{{ candidate.user.full_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="id_pillar" class="form-label">الركيزة *</label>
+                                <select name="pillar" id="id_pillar" class="form-select" dir="rtl" required>
+                                    <option value="">اختر الركيزة</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_voter_number" class="form-label">رقم الناخب *</label>
+                                <input type="text" name="voter_number" id="id_voter_number" class="form-control" dir="rtl" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="id_name" class="form-label">الاسم *</label>
+                                <input type="text" name="name" id="id_name" class="form-control" dir="rtl" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_governorate" class="form-label">المحافظة *</label>
+                                <input type="text" name="governorate" id="id_governorate" class="form-control" dir="rtl" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="id_district" class="form-label">المنطقة *</label>
+                                <input type="text" name="district" id="id_district" class="form-control" dir="rtl" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_sub_district" class="form-label">الناحية</label>
+                                <input type="text" name="sub_district" id="id_sub_district" class="form-control" dir="rtl">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="id_card_status" class="form-label">حالة البطاقة *</label>
+                                <select name="card_status" id="id_card_status" class="form-select" dir="rtl" required>
+                                    <option value="">اختر حالة البطاقة</option>
+                                    <option value="updated">محدث</option>
+                                    <option value="not_updated">غير محدث</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_center_name" class="form-label">اسم المركز *</label>
+                                <input type="text" name="center_name" id="id_center_name" class="form-control" dir="rtl" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="id_center_number" class="form-label">رقم المركز *</label>
+                                <input type="text" name="center_number" id="id_center_number" class="form-control" dir="rtl" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_station" class="form-label">المحطة *</label>
+                                <input type="text" name="station" id="id_station" class="form-control" dir="rtl" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="id_phone_number" class="form-label">رقم الهاتف *</label>
+                                <input type="text" name="phone_number" id="id_phone_number" class="form-control" dir="rtl" required>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'elections:entity_dashboard' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-right me-2"></i>
+                                العودة
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i>
+                                إضافة الناخب
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// تحديث قائمة الركائز عند اختيار المرشح
+document.getElementById('id_candidate').addEventListener('change', function() {
+    const candidateId = this.value;
+    const pillarSelect = document.getElementById('id_pillar');
+    
+    // مسح الخيارات الحالية
+    pillarSelect.innerHTML = '<option value="">اختر الركيزة</option>';
+    
+    if (candidateId) {
+        // جلب الركائز للمرشح المحدد
+        fetch(`/get-pillars/${candidateId}/`)
+            .then(response => response.json())
+            .then(data => {
+                data.pillars.forEach(pillar => {
+                    const option = document.createElement('option');
+                    option.value = pillar.id;
+                    option.textContent = pillar.name;
+                    pillarSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching pillars:', error);
+            });
+    }
+});
+</script>
+{% endblock %}
