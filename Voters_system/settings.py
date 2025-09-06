@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-msfxr)$&n%*jf+k6tf*1hc3gtyym5=25&h+v@^p55m%k662h_4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["https://voters-production.up.railway.app/"]
 
 
 # Application definition
