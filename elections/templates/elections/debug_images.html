@@ -1,0 +1,134 @@
+{% extends 'elections/base.html' %}
+
+{% block title %}تشخيص مشكلة الصور{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="fas fa-bug me-2"></i>تشخيص مشكلة عرض صور المرشحين</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>معلومات المستخدم الحالي:</strong><br>
+                        الاسم: {{ request.user.full_name }}<br>
+                        النوع: {{ request.user.user_type }}<br>
+                        معرف: {{ request.user.id }}<br>
+                        updated_at: {{ request.user.updated_at }}
+                    </div>
+                    
+                    {% if request.user.user_type == 'candidate' %}
+                        {% with candidate=request.user.candidate_profile %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>بيانات المرشح:</h5>
+                                <ul class="list-group">
+                                    <li class="list-group-item">الاسم: {{ candidate.user.full_name }}</li>
+                                    <li class="list-group-item">الصورة في قاعدة البيانات: {{ candidate.profile_image }}</li>
+                                    <li class="list-group-item">نوع الصورة: {{ candidate.profile_image|default:'لا توجد' }}</li>
+                                    <li class="list-group-item">شرط الصورة: {% if candidate.profile_image %}✅ صحيح{% else %}❌ خاطئ{% endif %}</li>
+                                    {% if candidate.profile_image %}
+                                    <li class="list-group-item">URL الصورة: {{ candidate.profile_image.url }}</li>
+                                    <li class="list-group-item">URL مع timestamp: {{ candidate.profile_image.url }}?t={{ candidate.user.updated_at|date:'U' }}</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h5>معاينة الصور:</h5>
+                                
+                                <div class="mb-3">
+                                    <h6>الصورة مع timestamp (الكود الحالي):</h6>
+                                    {% if candidate.profile_image %}
+                                        <img src="{{ candidate.profile_image.url }}?t={{ candidate.user.updated_at|date:'U' }}" 
+                                             alt="{{ candidate.user.full_name }}" 
+                                             style="width: 100px; height: 100px; object-fit: cover; border: 2px solid #007bff;"
+                                             onerror="this.style.border='2px solid red'; this.alt='خطأ في تحميل الصورة';">
+                                        <br><small class="text-muted">{{ candidate.profile_image.url }}?t={{ candidate.user.updated_at|date:'U' }}</small>
+                                    {% else %}
+                                        <div style="width: 100px; height: 100px; background: #ccc; display: flex; align-items: center; justify-content: center; border: 2px solid #6c757d;">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <br><small class="text-muted">لا توجد صورة</small>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <h6>الصورة بدون timestamp:</h6>
+                                    {% if candidate.profile_image %}
+                                        <img src="{{ candidate.profile_image.url }}" 
+                                             alt="{{ candidate.user.full_name }}" 
+                                             style="width: 100px; height: 100px; object-fit: cover; border: 2px solid #28a745;"
+                                             onerror="this.style.border='2px solid red'; this.alt='خطأ في تحميل الصورة';">
+                                        <br><small class="text-muted">{{ candidate.profile_image.url }}</small>
+                                    {% else %}
+                                        <div style="width: 100px; height: 100px; background: #ccc; display: flex; align-items: center; justify-content: center; border: 2px solid #6c757d;">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <br><small class="text-muted">لا توجد صورة</small>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <h6>اختبار رابط مباشر:</h6>
+                                    {% if candidate.profile_image %}
+                                        <a href="{{ candidate.profile_image.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            فتح الصورة في نافذة جديدة
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h5>نسخة من كود لوحة التحكم الأصلية:</h5>
+                            <div class="border p-3 bg-light">
+                                {% if candidate.profile_image %}
+                                    <div class="candidate-image-wrapper position-relative d-inline-block">
+                                        <img src="{{ candidate.profile_image.url }}?t={{ candidate.user.updated_at|date:'U' }}" alt="{{ candidate.user.full_name }}" 
+                                             class="candidate-profile-image rounded-3 shadow-lg" 
+                                             style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #fff; transition: all 0.3s ease;">
+                                        <div class="candidate-badge position-absolute bottom-0 end-0 bg-success rounded-circle d-flex align-items-center justify-content-center" 
+                                             style="width: 30px; height: 30px; border: 3px solid #fff;">
+                                            <i class="fas fa-check text-white" style="font-size: 12px;"></i>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="candidate-default-image position-relative d-flex align-items-center justify-content-center rounded-3 shadow-lg" 
+                                         style="width: 120px; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: 4px solid #fff;">
+                                        <i class="fas fa-user-tie text-white" style="font-size: 40px;"></i>
+                                        <div class="candidate-badge position-absolute bottom-0 end-0 bg-warning rounded-circle d-flex align-items-center justify-content-center" 
+                                             style="width: 30px; height: 30px; border: 3px solid #fff;">
+                                            <i class="fas fa-camera text-white" style="font-size: 12px;"></i>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endwith %}
+                    {% else %}
+                        <div class="alert alert-warning">
+                            هذه الصفحة مخصصة للمرشحين فقط. يرجى تسجيل الدخول كمرشح لرؤية التشخيص.
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <h5>معلومات إضافية:</h5>
+                        <ul class="list-group">
+                            <li class="list-group-item">وقت التحميل: <span id="loadTime"></span></li>
+                            <li class="list-group-item">User Agent: {{ request.META.HTTP_USER_AGENT|default:'غير متوفر' }}</li>
+                            <li class="list-group-item">عنوان IP: {{ request.META.REMOTE_ADDR|default:'غير متوفر' }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('loadTime').textContent = new Date().toLocaleString('ar-SA');
+</script>
+{% endblock %}

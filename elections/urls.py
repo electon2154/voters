@@ -39,8 +39,12 @@ urlpatterns = [
     path('admin/delete-candidate/<int:candidate_id>/', views.delete_candidate, name='delete_candidate'),
     path('admin/appearance-settings/', views.appearance_settings, name='appearance_settings'),
     
-    # صفحة تفاصيل الإحصائيات
+    # إحصائيات
     path('statistics/<str:stat_type>/', views.statistics_detail, name='statistics_detail'),
+    
+    # صفحة اختبار الصور
+    path('test-images/', views.test_candidate_images, name='test_candidate_images'),
+    path('debug-images/', views.debug_images, name='debug_images'),
     
     # API endpoints
     path('api/get-voter-stats/', views.get_voter_stats, name='get_voter_stats'),

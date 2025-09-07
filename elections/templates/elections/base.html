@@ -326,12 +326,18 @@
                  <a class="nav-link" href="{% url 'elections:entity_dashboard' %}">
                      <i class="fas fa-tachometer-alt me-2"></i> لوحة التحكم
                  </a>
+                 <a class="nav-link" href="{% url 'elections:add_candidate' %}">
+                     <i class="fas fa-user-tie me-2"></i> إضافة مرشح
+                 </a>
                  <a class="nav-link" href="{% url 'elections:add_voters_to_entity' %}">
                      <i class="fas fa-user-plus me-2"></i> إضافة ناخبين
                  </a>
              {% elif user.user_type == 'candidate' %}
                  <a class="nav-link" href="{% url 'elections:candidate_dashboard' %}">
                      <i class="fas fa-tachometer-alt me-2"></i> لوحة التحكم
+                 </a>
+                 <a class="nav-link" href="{% url 'elections:add_pillar' %}">
+                     <i class="fas fa-columns me-2"></i> إضافة ركيزة
                  </a>
              {% elif user.user_type == 'pillar' %}
                  <a class="nav-link" href="{% url 'elections:pillar_dashboard' %}">

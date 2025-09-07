@@ -49,7 +49,7 @@
         <div class="d-flex align-items-center">
             <div class="candidate-profile-mini position-relative me-3">
                 {% if pillar.candidate.profile_image %}
-                    <img src="{{ pillar.candidate.profile_image.url }}" alt="{{ pillar.candidate.user.full_name }}" 
+                    <img src="{{ pillar.candidate.profile_image.url }}?t={{ pillar.candidate.user.updated_at|date:'U' }}" alt="{{ pillar.candidate.user.full_name }}" 
                          class="candidate-mini-image rounded-3 shadow" 
                          style="width: 60px; height: 60px; object-fit: cover; border: 3px solid #fff; transition: all 0.3s ease;">
                     <div class="mini-badge position-absolute bottom-0 end-0 bg-success rounded-circle" 

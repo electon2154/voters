@@ -14,6 +14,7 @@ class CustomUser(AbstractUser):
     full_name = models.CharField(max_length=200, verbose_name='الاسم الكامل')
     phone_number = models.CharField(max_length=15, verbose_name='رقم الهاتف', blank=True)
     created_at = models.DateTimeField(default=timezone.now, verbose_name='تاريخ الإنشاء')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='تاريخ التحديث')
 
     class Meta:
         verbose_name = 'مستخدم'

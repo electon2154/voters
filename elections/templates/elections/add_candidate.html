@@ -19,22 +19,12 @@
                         {% csrf_token %}
                         
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-12 mb-3">
                                 <label for="{{ form.username.id_for_label }}" class="form-label">اسم المستخدم *</label>
                                 {{ form.username }}
                                 {% if form.username.errors %}
                                     <div class="invalid-feedback d-block">
                                         {{ form.username.errors.0 }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.email.id_for_label }}" class="form-label">البريد الإلكتروني *</label>
-                                {{ form.email }}
-                                {% if form.email.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.email.errors.0 }}
                                     </div>
                                 {% endif %}
                             </div>

@@ -37,7 +37,7 @@
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <form method="post">
+                                <form method="post" enctype="multipart/form-data">
                                     {% csrf_token %}
                                     
                                     <div class="mb-3">
@@ -69,6 +69,15 @@
                                             </label>
                                             <input type="tel" class="form-control" id="phone_number" name="phone_number">
                                         </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="profile_image" class="form-label">
+                                            <i class="fas fa-image me-1"></i>
+                                            صورة المرشح
+                                        </label>
+                                        <input type="file" class="form-control" id="profile_image" name="profile_image" accept="image/*">
+                                        <div class="form-text">اختياري - يمكن رفع صورة شخصية للمرشح</div>
                                     </div>
                                     
                                     <div class="row">

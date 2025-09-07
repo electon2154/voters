@@ -8,7 +8,7 @@ from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from .models import CustomUser, Entity, Candidate, Pillar, Voter, AppearanceSettings
-from .forms import LoginForm, ExcelUploadForm, VoterForm, PillarForm, CandidateForm, VoterCandidateForm, EntityForm
+from .forms import LoginForm, ExcelUploadForm, VoterForm, PillarForm, CandidateForm, VoterCandidateForm, EntityForm, EditEntityForm, EditCandidateForm
 import json
 import openpyxl
 
@@ -97,7 +97,12 @@ def entity_dashboard(request):
         'stats': stats,
         'candidate_stats': candidate_stats,
     }
-    return render(request, 'elections/entity_dashboard.html', context)
+    response = render(request, 'elections/entity_dashboard.html', context)
+    # إضافة رؤوس لمنع التخزين المؤقت
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 # لوحة تحكم المرشح
 @login_required
@@ -132,7 +137,12 @@ def candidate_dashboard(request):
             'not_voted': not_voted_voters,
         }
     }
-    return render(request, 'elections/candidate_dashboard.html', context)
+    response = render(request, 'elections/candidate_dashboard.html', context)
+    # إضافة رؤوس لمنع التخزين المؤقت
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 # لوحة تحكم الركيزة
 @login_required
@@ -217,7 +227,12 @@ def pillar_dashboard(request):
         'districts': districts,
         'sub_districts': sub_districts,
     }
-    return render(request, 'elections/pillar_dashboard.html', context)
+    response = render(request, 'elections/pillar_dashboard.html', context)
+    # إضافة رؤوس لمنع التخزين المؤقت
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 # تحديث حالة التصويت
 @login_required
@@ -573,7 +588,12 @@ def admin_dashboard(request):
         'recent_entities': recent_entities,
         'recent_candidates': recent_candidates,
     }
-    return render(request, 'elections/admin_dashboard.html', context)
+    response = render(request, 'elections/admin_dashboard.html', context)
+    # إضافة رؤوس لمنع التخزين المؤقت
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 # إنشاء كيان جديد
 @login_required
@@ -611,6 +631,7 @@ def create_candidate(request):
         full_name = request.POST.get('full_name')
         phone_number = request.POST.get('phone_number', '')
         entity_id = request.POST.get('entity_id')
+        profile_image = request.FILES.get('profile_image')
         
         if CustomUser.objects.filter(username=username).exists():
             messages.error(request, 'اسم المستخدم موجود مسبقاً')
@@ -628,7 +649,8 @@ def create_candidate(request):
             entity = get_object_or_404(Entity, id=entity_id)
             Candidate.objects.create(
                 user=user,
-                entity=entity
+                entity=entity,
+                profile_image=profile_image
             )
             
             messages.success(request, f'تم إنشاء المرشح "{full_name}" بنجاح')
@@ -706,19 +728,23 @@ def edit_entity(request, entity_id):
     entity = get_object_or_404(Entity, id=entity_id)
     
     if request.method == 'POST':
-        # تحديث بيانات المستخدم
-        entity.user.full_name = request.POST.get('full_name')
-        entity.user.phone_number = request.POST.get('phone_number', '')
-        entity.user.save()
-        
-        # تحديث اسم الكيان
-        entity.entity_name = request.POST.get('entity_name')
-        entity.save()
-        
-        messages.success(request, f'تم تحديث الكيان "{entity.entity_name}" بنجاح')
-        return redirect('elections:manage_entities')
+        form = EditEntityForm(request.POST, request.FILES, instance=entity)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'تم تحديث الكيان "{entity.entity_name}" بنجاح')
+            return redirect('elections:manage_entities')
+        else:
+            # إضافة رسائل الأخطاء
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{form.fields[field].label}: {error}')
+    else:
+        form = EditEntityForm(instance=entity)
     
-    context = {'entity': entity}
+    context = {
+        'entity': entity,
+        'form': form
+    }
     return render(request, 'elections/edit_entity.html', context)
 
 # حذف كيان
@@ -750,22 +776,23 @@ def edit_candidate(request, candidate_id):
     entities = Entity.objects.all()
     
     if request.method == 'POST':
-        # تحديث بيانات المستخدم
-        candidate.user.full_name = request.POST.get('full_name')
-        candidate.user.phone_number = request.POST.get('phone_number', '')
-        candidate.user.save()
-        
-        # تحديث الكيان المرتبط
-        entity_id = request.POST.get('entity_id')
-        candidate.entity = get_object_or_404(Entity, id=entity_id)
-        candidate.save()
-        
-        messages.success(request, f'تم تحديث المرشح "{candidate.user.full_name}" بنجاح')
-        return redirect('elections:manage_candidates')
+        form = EditCandidateForm(request.POST, request.FILES, instance=candidate)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'تم تحديث المرشح "{candidate.user.full_name}" بنجاح')
+            return redirect('elections:manage_candidates')
+        else:
+            # إضافة رسائل الأخطاء
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{form.fields[field].label}: {error}')
+    else:
+        form = EditCandidateForm(instance=candidate)
     
     context = {
         'candidate': candidate,
-        'entities': entities
+        'entities': entities,
+        'form': form
     }
     return render(request, 'elections/edit_candidate.html', context)
 
@@ -1072,3 +1099,24 @@ def appearance_settings(request):
     return render(request, 'elections/appearance_settings.html', {
         'current_settings': current_settings
     })
+
+@login_required
+def test_candidate_images(request):
+    """صفحة اختبار عرض صور المرشحين"""
+    candidates = Candidate.objects.all().select_related('user')
+    
+    context = {
+        'candidates': candidates,
+        'page_title': 'اختبار صور المرشحين'
+    }
+    
+    return render(request, 'elections/test_candidate_image.html', context)
+
+@login_required
+def debug_images(request):
+    """صفحة تشخيص مشكلة عرض الصور"""
+    context = {
+        'page_title': 'تشخيص مشكلة الصور'
+    }
+    
+    return render(request, 'elections/debug_images.html', context)
